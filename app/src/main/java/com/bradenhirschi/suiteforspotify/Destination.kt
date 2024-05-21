@@ -10,7 +10,13 @@ sealed class Destination (val route: String, val icon: Int, val title: String){
     object TopTracks : Destination(
         route = "topTracks",
         icon = R.drawable.baseline_assessment_24,
-        title = "Top Tracks"
+        title = "Tracks"
+    )
+
+    object TopArtists : Destination(
+        route = "topArtists",
+        icon = R.drawable.baseline_blur_on_24,
+        title = "Artists"
     )
 
     object Playlists : Destination(
@@ -22,10 +28,10 @@ sealed class Destination (val route: String, val icon: Int, val title: String){
     object TrackSearch : Destination(
         route = "trackSearch",
         icon = R.drawable.baseline_article_24,
-        title = "Track Search"
+        title = "Search"
     )
 
     companion object {
-        val toList = listOf(Home, TopTracks, Playlists, TrackSearch)
+        val toList = listOf(Home, TopTracks, TopArtists, Playlists, TrackSearch)
     }
 }

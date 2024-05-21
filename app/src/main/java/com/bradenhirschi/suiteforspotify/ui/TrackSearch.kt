@@ -14,46 +14,81 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import com.adamratzman.spotify.models.Track
 import com.skydoves.landscapist.glide.GlideImage
-
-//import com.bradenhirschi.suiteforspotify.utils.toast
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role.Companion.Button
+import com.adamratzman.spotify.SpotifyClientApi
+import com.bradenhirschi.suiteforspotify.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
-fun TrackSearchPage(activity: BaseActivity? = null, tracks: List<Track>) {
+fun TrackSearchPage(activity: BaseActivity? = null, api: SpotifyClientApi) {
     MaterialTheme {
         val typography = MaterialTheme.typography
+        var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
+        var searchQuery by remember { mutableStateOf("") }
 
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
-                "Example search results for query 'Billy Joel'",
+                "Search tracks",
                 style = typography.headlineSmall,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    modifier = Modifier.padding(end = 10.dp),
+                    value = searchQuery,
+                    onValueChange = { searchQuery = it },
+                    label = { Text("Search for tracks") },
+                )
+
+                Button(onClick = {
+                    GlobalScope.launch {
+                        if (searchQuery.isNotEmpty()) {
+                            val topTracks = withContext(Dispatchers.IO) {
+                                api.search.searchTrack(searchQuery).items
+                            }
+                            tracks = topTracks
+                        }
+                    }
+                }) {
+                    Text("Go")
+                }
+            }
+
+
+
             TrackList(tracks)
         }
     }
 
-}
-
-@Preview
-@Composable
-fun TrackViewPagePreview() {
-    TrackSearchPage(tracks = listOf())
 }
 
 @Composable
@@ -63,7 +98,6 @@ private fun TrackList(tracks: List<Track>) {
         items(
             items = tracks, itemContent = { track ->
                 TrackRow(track = track, onTrackClick = {
-//                    toast(context, "You clicked ${track.name} - opening in spotify")
                     val browserIntent =
                         Intent(
                             Intent.ACTION_VIEW,

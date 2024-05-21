@@ -9,8 +9,6 @@ import com.bradenhirschi.suiteforspotify.BuildConfig
 import com.bradenhirschi.suiteforspotify.SuiteForSpotifyApplication
 import com.bradenhirschi.suiteforspotify.ui.HomeActivity
 
-//import com.adamratzman.spotifyandroidexample.toast
-
 internal var pkceClassBackTo: Class<out Activity>? = null
 
 class SpotifyPkceLoginActivityImpl : AbstractSpotifyPkceLoginActivity() {
@@ -21,16 +19,13 @@ class SpotifyPkceLoginActivityImpl : AbstractSpotifyPkceLoginActivity() {
     override fun onSuccess(api: SpotifyClientApi) {
         val model = (application as SuiteForSpotifyApplication).model
         model.credentialStore.setSpotifyApi(api)
-        // TODO BRADEN Change this back to home activity
         val classBackTo = pkceClassBackTo ?: HomeActivity::class.java
         pkceClassBackTo = null
-//        toast("Authentication via PKCE has completed. Launching ${classBackTo.simpleName}..")
         startActivity(Intent(this, classBackTo))
     }
 
     override fun onFailure(exception: Exception) {
         exception.printStackTrace()
         pkceClassBackTo = null
-//        toast("Auth failed: ${exception.message}")
     }
 }

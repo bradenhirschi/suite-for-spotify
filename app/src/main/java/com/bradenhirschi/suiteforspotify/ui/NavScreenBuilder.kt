@@ -14,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -22,24 +23,32 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.adamratzman.spotify.SpotifyClientApi
+import com.adamratzman.spotify.models.Artist
 import com.adamratzman.spotify.models.SimplePlaylist
 import com.adamratzman.spotify.models.Track
 import com.bradenhirschi.suiteforspotify.Destination
+import com.bradenhirschi.suiteforspotify.ui.theme.AppTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @Composable
 fun AppScreen(api: SpotifyClientApi) {
     val navController = rememberNavController()
-    Scaffold(
-        bottomBar = { BottomNavigationBar(navController = navController,
-            appItems = Destination.toList)},
-        content = { padding ->
-            Box(modifier = Modifier.padding(padding)) {
-                AppNavigation(navController = navController, api = api)
+    AppTheme {
+        Scaffold(
+            bottomBar = {
+                BottomNavigationBar(
+                    navController = navController,
+                    appItems = Destination.toList
+                )
+            },
+            content = { padding ->
+                Box(modifier = Modifier.padding(padding)) {
+                    AppNavigation(navController = navController, api = api)
+                }
             }
-        }
-    )
+        )
+    }
 }
 
 @Composable
@@ -62,6 +71,19 @@ fun AppNavigation(navController: NavHostController, api: SpotifyClientApi) {
             TopTracksPage(tracks = tracks)
         }
 
+        composable(Destination.TopArtists.route) {
+            var artists by remember { mutableStateOf<List<Artist>>(emptyList()) }
+
+            LaunchedEffect(api) {
+                val topArtists = withContext(Dispatchers.IO) {
+                    api.personalization.getTopArtists().items
+                }
+                artists = topArtists
+            }
+
+            TopArtistsPage(artists = artists)
+        }
+
         composable(Destination.Playlists.route) {
             var playlists by remember { mutableStateOf<List<SimplePlaylist>>(emptyList()) }
 
@@ -77,27 +99,29 @@ fun AppNavigation(navController: NavHostController, api: SpotifyClientApi) {
         composable(Destination.TrackSearch.route) {
             var tracks by remember { mutableStateOf<List<Track>>(emptyList()) }
 
-            LaunchedEffect(api) {
-                val topTracks = withContext(Dispatchers.IO) {
-                    api.search.searchTrack("Billy Joel").items
-                }
-                tracks = topTracks
-            }
+//            LaunchedEffect(api) {
+//                val topTracks = withContext(Dispatchers.IO) {
+//                    api.search.searchTrack("Billy Joel").items
+//                }
+//                tracks = topTracks
+//            }
 
-            TrackSearchPage(tracks = tracks)
+            TrackSearchPage(api = api)
         }
     }
 }
 
 @Composable
 fun BottomNavigationBar(navController: NavController, appItems: List<Destination>) {
-    NavigationBar {
+    NavigationBar(
+        containerColor = Color.DarkGray
+    ) {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         appItems.forEach { item ->
             NavigationBarItem(
-                icon = { Icon(painterResource(id = item.icon), contentDescription = item.title)},
-                label = { Text(text = item.title)},
+                icon = { Icon(painterResource(id = item.icon), contentDescription = item.title) },
+                label = { Text(text = item.title) },
                 alwaysShowLabel = true,
                 selected = currentRoute == item.route,
                 onClick = {

@@ -104,7 +104,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // Images
-    // Images
     implementation("com.github.bumptech.glide:glide:4.13.1")
     annotationProcessor("com.github.bumptech.glide:compiler:4.13.1")
     implementation("com.github.skydoves:landscapist-glide:1.5.0" )
